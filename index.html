@@ -48,7 +48,14 @@ body.light-mode{
 body{background:var(--c-bg);font-family:'Segoe UI',Tahoma,Arial,sans-serif;color:var(--c-text);direction:rtl;transition:background .25s,color .25s;min-height:100vh;min-height:100dvh;overflow-x:hidden}
 input,select,textarea{background:var(--c-input-bg);border:1px solid var(--c-input-border);border-radius:8px;padding:9px 12px;color:var(--c-text);font-size:14px;font-family:inherit;width:100%;outline:none;transition:background .25s,color .25s,border-color .2s;-webkit-appearance:none;appearance:none}
 input:focus,select:focus{border-color:#60a5fa}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center;padding-left:30px}
+/* RTL-safe dropdown arrow — always on the right, always enough padding */
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='%2394a3b8' d='M5.5 7L0 0h11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-right:30px !important;
+  padding-left:8px;
+}
 select option{background:var(--c-card)}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -435,7 +442,7 @@ function AdminPanel({projects,onClose,lightMode,orders,setOrders,setProjects,per
   const bg=lm?"#f8fafc":"#131825";
   const inputBg=lm?"#f8fafc":"#0f1117";
   const inputBd=lm?"#cbd5e1":"#374151";
-  const inp={background:inputBg,border:`1px solid ${inputBd}`,color:text,borderRadius:6,padding:"7px 10px",fontSize:13,width:"100%",outline:"none",fontFamily:"inherit"};
+  const inp={background:inputBg,border:`1px solid ${inputBd}`,color:text,borderRadius:6,padding:"7px 10px",paddingRight:"30px",fontSize:13,width:"100%",outline:"none",fontFamily:"inherit"};
   const fmtTS=ts=>{if(!ts)return"—";const d=new Date(ts);return d.toLocaleDateString("he-IL")+" "+d.toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})};
   const saveUser=()=>{if(!editUser.username||!editUser.name)return alert("שם משתמש ושם מלא הם שדות חובה");const updated=users.map(u=>u.id===editUser.id?editUser:u);saveUsers(updated);setUsers(updated);addAuditEntry({userId:currentUser.id,username:currentUser.username,name:currentUser.name,action:"עדכון משתמש",target:editUser.username,details:`עודכן: ${editUser.name}`});setEditUser(null)};
   const addUser=()=>{if(!newUser.username||!newUser.password||!newUser.name)return alert("כל השדות הם חובה");if(users.find(u=>u.username===newUser.username))return alert("שם משתמש כבר קיים");const u={...newUser,id:uid()};const updated=[...users,u];saveUsers(updated);setUsers(updated);addAuditEntry({userId:currentUser.id,username:currentUser.username,name:currentUser.name,action:"הוספת משתמש",target:newUser.username,details:`נוסף: ${newUser.name}`});setNewUser({username:"",password:"",name:"",role:"viewer",projectAccess:"all",canEdit:false,canView:true,active:true});setAddMode(false);setAuditLog(getAuditLog())};
