@@ -1,4 +1,4 @@
-const CACHE = 'pmo-v1';
+const CACHE = 'pmo-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -11,8 +11,9 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {})
   );
+  // Don't skip waiting automatically — wait for user confirmation
 });
 
 self.addEventListener('activate', e => {
@@ -23,8 +24,14 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Handle SKIP_WAITING message from the app
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', e => {
-  // Network-first for Google Sheets, cache-first for everything else
   if (e.request.url.includes('script.google.com')) {
     e.respondWith(
       fetch(e.request).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } }))
@@ -35,7 +42,7 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(resp => {
-        if (resp.ok) {
+        if (resp.ok && resp.type !== 'opaque') {
           const clone = resp.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }

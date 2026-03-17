@@ -55,14 +55,9 @@ button{font-family:inherit;cursor:pointer}
   .mob-tabs::-webkit-scrollbar{display:none}
   .desk-nav{display:none}
   .hide-mobile{display:none!important}
-  /* Fix 2: Stack charts vertically on mobile */
-  .chart-grid-2col{grid-template-columns:1fr!important}
-  /* Fix 3: Adjust sticky filter top for mobile (nav is taller due to tab row) */
-  .dash-filter-sticky{top:96px!important}
 }
 @media(min-width:641px){
   .show-mobile-only{display:none!important}
-  .dash-filter-sticky{top:52px!important}
 }
 
 /* PWA status bar padding */
@@ -622,7 +617,7 @@ function Dashboard({orders,projects}){
   else{lineColor="#f59e0b";lineColor2=null;lineLabel="מצטבר";let cum=0;lineData=allLineKeys.map(k=>{let rev=0;fOrders.forEach(o=>o.deliveries.forEach(d=>{if(keyFn(d.date)!==k||(selYear!=="all"&&yrKey(d.date)!==selYear))return;rev+=Number(d.qty||0)*Number(o.unitPrice||0)}));cum+=rev;return{label:k,v1:cum,v2:0}})}
   return(
     <div>
-      <div className="dash-filter-sticky" style={{position:"sticky",zIndex:40,background:"var(--c-bg)",paddingTop:8,paddingBottom:4,marginBottom:8}}>
+      <div style={{position:"sticky",top:52,zIndex:40,background:"var(--c-bg)",paddingTop:8,paddingBottom:4,marginBottom:8}}>
         <Card style={{padding:"10px 14px",display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end",boxShadow:"0 2px 8px #0003"}}>
           <span style={{fontSize:13,color:"var(--c-dim)",fontWeight:600,paddingBottom:2}}>🔍</span>
           <div style={{display:"flex",flexDirection:"column",gap:3,minWidth:140}}><label style={{fontSize:11,color:"var(--c-dim)"}}>פרויקט</label><select value={selProj} onChange={e=>setSelProj(e.target.value)} style={{padding:"5px 8px",fontSize:12}}><option value="all">כל הפרויקטים</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
@@ -681,8 +676,8 @@ function Dashboard({orders,projects}){
           <Tile icon="📊" label="אחוז ניצול" value={totalQty?Math.round(totalSup/totalQty*100)+"%":"—"} color="#60a5fa" sub={`${totalSup.toLocaleString()}/${totalQty.toLocaleString()}`}/>
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.6fr) minmax(0,1fr)",gap:12,marginBottom:12}} className="chart-grid-2col">
-        <Card><div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💰 הכנסות לפי תקופה</div><BarChart data={pKeys.map(k=>({label:k,value:pd[k].rev}))} color="#a78bfa" formatVal={v=>fmtMoney(v)} height={130}/></Card>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.6fr) minmax(0,1fr)",gap:12,marginBottom:12}}>
+        <Card><div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💰 הכנסות לפי תקופה</div><BarChart data={pKeys.map(k=>({label:k,value:pd[k].rev}))} color="#a78bfa" formatVal={v=>fmtMoney(v)} height={140}/></Card>
         <Card style={{display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{fontWeight:700,fontSize:14}}>📊 התפלגות</div><select value={donutSlice} onChange={e=>setDonutSlice(e.target.value)} style={{padding:"3px 6px",fontSize:11,width:"auto"}}><option value="status">סטטוס</option><option value="project">הכנסות</option><option value="qty">כמויות</option></select></div>
           <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}><DonutChart data={donutData} size={170}/></div>
@@ -693,11 +688,11 @@ function Dashboard({orders,projects}){
           <div style={{fontWeight:700,fontSize:14}}>📈 ניתוח מגמות</div>
           <SegBtn options={[["rev_qty","הכנסות+כמויות"],["per_proj","פרויקטים"],["cumulative","מצטבר"]]} value={lineSlice} onChange={setLineSlice}/>
         </div>
-        <LineChart data={lineData} color={lineColor} color2={lineColor2} label={lineLabel} label2={lineLabel2} formatVal={v=>fmtMoney(v)} height={130}/>
+        <LineChart data={lineData} color={lineColor} color2={lineColor2} label={lineLabel} label2={lineLabel2} formatVal={v=>fmtMoney(v)} height={150}/>
       </Card>
       <Card style={{marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><div style={{fontWeight:700,fontSize:14}}>📦 כמויות שסופקו</div><div style={{fontSize:12,color:"#94a3b8"}}>סה"כ: <b style={{color:"#3b82f6"}}>{pKeys.reduce((s,k)=>s+pd[k].qty,0).toLocaleString()}</b></div></div>
-        <BarChart data={pKeys.map(k=>({label:k,value:pd[k].qty}))} color="#3b82f6" formatVal={v=>v.toLocaleString()} height={100}/>
+        <BarChart data={pKeys.map(k=>({label:k,value:pd[k].qty}))} color="#3b82f6" formatVal={v=>v.toLocaleString()} height={120}/>
       </Card>
       <Card style={{marginBottom:12}}>
         <div style={{fontWeight:700,marginBottom:14,fontSize:14}}>🏗️ התקדמות לפי פרויקט</div>
@@ -1034,39 +1029,6 @@ function ExcelTab({orders,projects,updO}){
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-// ── PWA Banners ────────────────────────────────────────────────────────────────
-function InstallBanner({onInstall,onDismiss}){
-  return(
-    <div style={{position:"fixed",bottom:16,left:12,right:12,zIndex:999,background:"linear-gradient(135deg,#1e3a5f,#1e2130)",border:"1px solid #3b82f6",borderRadius:16,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 8px 32px rgba(0,0,0,.6)"}}>
-      <div style={{fontSize:34,lineHeight:1,flexShrink:0}}>🏭</div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:14,color:"#e2e8f0",marginBottom:2}}>התקן את האפליקציה</div>
-        <div style={{fontSize:12,color:"#93c5fd"}}>גישה מהירה מהמסך הראשי — עובד גם offline</div>
-      </div>
-      <div style={{display:"flex",gap:8,flexShrink:0}}>
-        <button onClick={onDismiss} style={{background:"#374151",border:"none",borderRadius:8,padding:"8px 12px",color:"#94a3b8",fontSize:13,fontFamily:"inherit"}}>לא עכשיו</button>
-        <button onClick={onInstall} style={{background:"#3b82f6",border:"none",borderRadius:8,padding:"8px 16px",color:"#fff",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>התקן ↓</button>
-      </div>
-    </div>
-  );
-}
-
-function UpdateBanner({onUpdate,onDismiss}){
-  return(
-    <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,background:"linear-gradient(135deg,#052e16,#064e3b)",borderBottom:"2px solid #10b981",padding:"10px 16px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 4px 20px rgba(0,0,0,.5)"}}>
-      <div style={{fontSize:22,flexShrink:0}}>🔄</div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:13,color:"#6ee7b7"}}>עדכון זמין לאפליקציה!</div>
-        <div style={{fontSize:11,color:"#34d399"}}>גרסה חדשה הורדה ברקע ומוכנה להתקנה</div>
-      </div>
-      <div style={{display:"flex",gap:8,flexShrink:0}}>
-        <button onClick={onDismiss} style={{background:"none",border:"1px solid #065f46",borderRadius:7,padding:"5px 10px",color:"#6ee7b7",fontSize:12,fontFamily:"inherit"}}>אחר כך</button>
-        <button onClick={onUpdate} style={{background:"#10b981",border:"none",borderRadius:8,padding:"6px 14px",color:"#fff",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>עדכן עכשיו →</button>
-      </div>
-    </div>
-  );
-}
-
 let saveTimer=null;
 function App(){
   const [lightMode,setLightMode]=useState(()=>{try{return localStorage.getItem("pmo_light")==="1"}catch{return false}});
@@ -1080,72 +1042,9 @@ function App(){
   const [projects,setProjects]=useState(DEF_PROJ);
   const [loading,setLoading]=useState(true);
   const [sync,setSync]=useState("ok");
-  // PWA state
-  const [installPrompt,setInstallPrompt]=useState(null);
-  const [showInstallBanner,setShowInstallBanner]=useState(false);
-  const [showUpdateBanner,setShowUpdateBanner]=useState(false);
-  const swRegRef=useRef(null);
   const oRef=useRef(orders),pRef=useRef(projects);
 
   useEffect(()=>{document.body.classList.toggle("light-mode",lightMode);try{localStorage.setItem("pmo_light",lightMode?"1":"0")}catch{};const m=document.getElementById("tcm");if(m)m.content=lightMode?"#ffffff":"#0f1117"},[lightMode]);
-
-  // PWA install prompt listener
-  useEffect(()=>{
-    const handler=e=>{
-      e.preventDefault();
-      setInstallPrompt(e);
-      // Only show if not dismissed before
-      const dismissed=localStorage.getItem("pmo_install_dismissed");
-      if(!dismissed) setShowInstallBanner(true);
-    };
-    window.addEventListener("beforeinstallprompt",handler);
-    return()=>window.removeEventListener("beforeinstallprompt",handler);
-  },[]);
-
-  // SW registration + update detection
-  useEffect(()=>{
-    if(!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js").then(reg=>{
-      swRegRef.current=reg;
-      // Check for waiting SW (update ready)
-      if(reg.waiting) setShowUpdateBanner(true);
-      reg.addEventListener("updatefound",()=>{
-        const newWorker=reg.installing;
-        if(!newWorker) return;
-        newWorker.addEventListener("statechange",()=>{
-          if(newWorker.state==="installed"&&navigator.serviceWorker.controller){
-            setShowUpdateBanner(true);
-          }
-        });
-      });
-    }).catch(()=>{});
-    // Listen for controller change (after update)
-    navigator.serviceWorker.addEventListener("controllerchange",()=>{
-      window.location.reload();
-    });
-  },[]);
-
-  const handleInstall=async()=>{
-    if(!installPrompt) return;
-    installPrompt.prompt();
-    await installPrompt.userChoice;
-    setInstallPrompt(null);
-    setShowInstallBanner(false);
-    localStorage.setItem("pmo_install_dismissed","1");
-  };
-  const handleDismissInstall=()=>{
-    setShowInstallBanner(false);
-    localStorage.setItem("pmo_install_dismissed","1");
-  };
-  const handleUpdate=()=>{
-    const reg=swRegRef.current;
-    if(reg&&reg.waiting){
-      reg.waiting.postMessage({type:"SKIP_WAITING"});
-    } else {
-      window.location.reload();
-    }
-    setShowUpdateBanner(false);
-  };
 
   useEffect(()=>{
     const lo=LS.get("pmo_orders"),lp=LS.get("pmo_projects");
@@ -1180,9 +1079,8 @@ function App(){
 
   return(
     <AuthCtx.Provider value={{currentUser,canEdit,canViewProject}}>
-      {showUpdateBanner&&<UpdateBanner onUpdate={handleUpdate} onDismiss={()=>setShowUpdateBanner(false)}/>}
       <Navbar tab={tab} setTab={setTab} lightMode={lightMode} toggleLight={()=>setLightMode(p=>!p)} sync={sync} onAdmin={()=>setShowAdmin(true)} onCustomize={()=>setShowCustomize(true)} onLogout={handleLogout}/>
-      <main className="main-content" style={{maxWidth:1440,margin:"0 auto",padding:"16px 14px",paddingBottom:showInstallBanner?"96px":"16px"}}>
+      <main className="main-content" style={{maxWidth:1440,margin:"0 auto",padding:"16px 14px"}}>
         {tab==="dashboard"&&<Dashboard orders={filteredOrders} projects={filteredProjects}/>}
         {tab==="orders"&&<Orders orders={filteredOrders} projects={filteredProjects} updO={updO}/>}
         {tab==="shortages"&&<Shortages orders={filteredOrders} updO={updO} projects={filteredProjects}/>}
@@ -1190,7 +1088,6 @@ function App(){
         {tab==="projects"&&<Projects projects={filteredProjects} orders={filteredOrders} updP={updP}/>}
         {tab==="excel"&&<ExcelTab orders={filteredOrders} projects={filteredProjects} updO={updO}/>}
       </main>
-      {showInstallBanner&&<InstallBanner onInstall={handleInstall} onDismiss={handleDismissInstall}/>}
       {showAdmin&&<AdminPanel projects={projects} onClose={()=>setShowAdmin(false)} lightMode={lightMode} orders={orders} setOrders={setOrders} setProjects={setProjects} persist={persist}/>}
       {showCustomize&&<CustomizePanel onClose={()=>setShowCustomize(false)}/>}
     </AuthCtx.Provider>
@@ -1199,5 +1096,6 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").then(r=>console.log("SW:",r.scope)).catch(e=>console.log("SW err:",e))})}</script>
 </body>
 </html>
