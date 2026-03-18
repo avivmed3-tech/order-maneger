@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="ניהול ייצור"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="icon-192.jpg"/>
 <title>🏭 ניהול ייצור</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -1711,25 +1711,26 @@ function App(){
     if(m)m.content=lightMode?"#ffffff":"#0f1117";
   },[lightMode]);
 
-  // ── PWA Install prompt (beforeinstallprompt fires on Android Chrome) ──
+  // ── PWA Install prompt ──────────────────────────────────────────────────
   useEffect(()=>{
-    // Show install banner if not already installed & not dismissed
-    const dismissed=localStorage.getItem("pmo_install_dismissed");
-    
+    // Check if already running as installed PWA
+    const isInstalled=window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone===true;
+    if(isInstalled) return; // already installed — never show banner
+
     const handler=e=>{
-      e.preventDefault(); // stop mini-infobar
+      e.preventDefault(); // stop Chrome mini-infobar
       setInstallPrompt(e);
-      if(!dismissed) setShowInstallBanner(true);
+      setShowInstallBanner(true); // always show — until user installs
     };
     window.addEventListener("beforeinstallprompt",handler);
-    
-    // Detect if running as installed PWA — hide banner
+
+    // Hide permanently only after actual installation
     window.addEventListener("appinstalled",()=>{
       setShowInstallBanner(false);
       setInstallPrompt(null);
-      localStorage.setItem("pmo_install_dismissed","1");
     });
-    
+
     return()=>window.removeEventListener("beforeinstallprompt",handler);
   },[]);
 
@@ -1738,9 +1739,7 @@ function App(){
     if(!("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("./sw.js?v=4").then(reg=>{
       swRegRef.current=reg;
-      // Already a waiting SW? Show update banner immediately
       if(reg.waiting) setShowUpdateBanner(true);
-      // New SW found during session
       reg.addEventListener("updatefound",()=>{
         const nw=reg.installing;
         if(!nw) return;
@@ -1750,11 +1749,9 @@ function App(){
           }
         });
       });
-      // Poll for updates every 30 minutes
       const poll=setInterval(()=>reg.update(),30*60*1000);
       return()=>clearInterval(poll);
     }).catch(()=>{});
-    // When SW controller changes (after skipWaiting) → reload
     navigator.serviceWorker.addEventListener("controllerchange",()=>{
       window.location.reload();
     });
@@ -1766,11 +1763,11 @@ function App(){
     const res=await installPrompt.userChoice;
     setInstallPrompt(null);
     setShowInstallBanner(false);
-    if(res.outcome==="accepted") localStorage.setItem("pmo_install_dismissed","1");
+    // No localStorage save — if they cancel, banner shows again next visit
   };
   const handleDismissInstall=()=>{
+    // Just hide for this session — will reappear next visit
     setShowInstallBanner(false);
-    localStorage.setItem("pmo_install_dismissed","1");
   };
   const handleUpdate=()=>{
     const reg=swRegRef.current;
