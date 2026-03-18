@@ -796,18 +796,17 @@ function Navbar({tab,setTab,lightMode,toggleLight,sync,onAdmin,onCustomize,onLog
   return(
     <div className="nav-wrapper" style={{background:navBg,borderBottom:`1px solid ${navBorder}`,position:"sticky",top:0,zIndex:50,transition:"background .3s"}}>
       {/* Desktop nav */}
-      <div style={{maxWidth:1440,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",gap:8,height:52}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+      <div style={{maxWidth:1440,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",gap:0,height:52}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,paddingLeft:8}}>
           <div style={{fontWeight:800,fontSize:15,color:navActive,whiteSpace:"nowrap"}}>🏭 ניהול ייצור</div>
           <span style={{fontSize:9,background:navActive+"22",color:navActive,padding:"2px 6px",borderRadius:10,border:`1px solid ${navActive}44`,fontWeight:700,letterSpacing:.3,whiteSpace:"nowrap"}}>v{APP_VERSION}</span>
         </div>
-        <div className="desk-nav" style={{flexWrap:"nowrap",overflowX:"auto",scrollbarWidth:"none"}}>
+        <div className="desk-nav" style={{flex:1,flexWrap:"nowrap",overflowX:"auto",scrollbarWidth:"none",justifyContent:"flex-start"}}>
           {TABS.map(t=>(
-            <button key={t.id} onClick={()=>{setTab(t.id);setMenuOpen(false)}} style={{padding:"0 14px",height:52,background:"none",border:"none",color:tab===t.id?navActive:navMuted,borderBottom:tab===t.id?`3px solid ${navActive}`:"3px solid transparent",fontWeight:tab===t.id?700:400,fontSize:13,whiteSpace:"nowrap",fontFamily:"inherit"}}>{t.label}</button>
+            <button key={t.id} onClick={()=>{setTab(t.id);setMenuOpen(false)}} style={{padding:"0 16px",height:52,background:"none",border:"none",color:tab===t.id?navActive:navMuted,borderBottom:tab===t.id?`3px solid ${navActive}`:"3px solid transparent",fontWeight:tab===t.id?700:400,fontSize:13,whiteSpace:"nowrap",fontFamily:"inherit"}}>{t.label}</button>
           ))}
         </div>
-        <div style={{flex:1}}/>
-        <div className="hide-mobile" style={{display:"flex",gap:6,alignItems:"center"}}>
+        <div className="hide-mobile" style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
           <div style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:syncInfo.bg,color:syncInfo.c,whiteSpace:"nowrap"}}>{syncInfo.t}</div>
           <button onClick={toggleLight} style={{background:lm?"#e2e8f0":"#131825",border:`1px solid ${navBorder}`,borderRadius:8,padding:"5px 12px",fontSize:13,color:navMuted,fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{lm?"🌙":"☀️"} <span style={{fontSize:11}}>{lm?"כהה":"בהיר"}</span></button>
           {currentUser?.role==="admin"&&<button onClick={onAdmin} style={{background:"#f59e0b22",border:"1px solid #f59e0b44",color:"#f59e0b",borderRadius:8,padding:"5px 12px",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>🛡️ ניהול</button>}
@@ -856,7 +855,7 @@ function Dashboard({orders,projects}){
   const [selProj,setSelProj]=useState("all");
   const [donutSlice,setDonutSlice]=useState("status");
   const [lineSlice,setLineSlice]=useState("rev_qty");
-  const [forecastOpen,setForecastOpen]=useState(true);
+  const [forecastOpen,setForecastOpen]=useState(false);
   const allYears=useMemo(()=>[...new Set(orders.flatMap(o=>o.deliveries.map(d=>yrKey(d.date))).filter(Boolean))].sort().reverse(),[orders]);
   const fOrders=useMemo(()=>orders.filter(o=>selProj==="all"||o.projectId===selProj),[orders,selProj]);
   const fDeliveries=useMemo(()=>fOrders.flatMap(o=>o.deliveries.map(d=>({...d,unitPrice:Number(o.unitPrice||0)})).filter(d=>selYear==="all"||yrKey(d.date)===selYear)),[fOrders,selYear]);
